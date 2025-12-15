@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "346733065047",
+    "firebase_url": "https://fir-javier-9fd0a-default-rtdb.firebaseio.com",
+    "project_id": "fir-javier-9fd0a",
+    "storage_bucket": "fir-javier-9fd0a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:346733065047:android:f80a9353cd095819ba0412",
+        "android_client_info": {
+          "package_name": "com.example.app_iot_sistema_riego"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAlNWHaKNfTCh_Ny6i31unVkdvDMsNMTs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

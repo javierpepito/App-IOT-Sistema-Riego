@@ -142,13 +142,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
       ),
-      body: Column(
-        children: [
-          // Calendario
-          Card(
-            margin: const EdgeInsets.all(8.0),
-            elevation: 2,
-            child: TableCalendar(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Calendario
+            Card(
+              margin: const EdgeInsets.all(8.0),
+              elevation: 2,
+              child: TableCalendar(
               firstDay: DateTime.now(),
               lastDay: DateTime.now().add(const Duration(days: 365)),
               focusedDay: _focusedDay,
@@ -264,35 +265,37 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ),
 
           // Lista de programaciones
-          Expanded(
-            child: StreamBuilder<DatabaseEvent>(
-              stream: _databaseService.programacionesStream,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          StreamBuilder<DatabaseEvent>(
+            stream: _databaseService.programacionesStream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
 
-                if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Text(
-                        'No hay programaciones.\nAgrega una nueva usando el calendario.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    ),
-                  );
-                }
+              if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                return const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Text(
+                    'No hay programaciones.\nAgrega una nueva usando el calendario.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                );
+              }
 
-                final programacionesMap =
-                    snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                final programaciones = programacionesMap.entries.toList();
+              final programacionesMap =
+                  snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+              final programaciones = programacionesMap.entries.toList();
 
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: programaciones.length,
-                  itemBuilder: (context, index) {
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: programaciones.length,
+                itemBuilder: (context, index) {
                     final entry = programaciones[index];
                     final key = entry.key;
                     final data = entry.value as Map<dynamic, dynamic>;
@@ -382,8 +385,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 );
               },
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }
