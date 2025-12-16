@@ -17,7 +17,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   TimeOfDay _selectedTime = TimeOfDay.now();
-  int _duracionMinutos = 30;
+  int _duracionMinutos = 3;
 
   @override
   void initState() {
@@ -37,12 +37,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
 
     try {
-      final horaFormateada =
-          '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
-
       await _databaseService.agregarProgramacion(
         fecha: _selectedDay!,
-        hora: horaFormateada,
+        hora: _selectedTime,
         duracionMinutos: _duracionMinutos,
       );
 
@@ -96,19 +93,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('${duracionTemp ?? 30} minutos',
+                Text('${duracionTemp ?? 3} minutos',
                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 Slider(
-                  value: (duracionTemp ?? 30).toDouble(),
-                  min: 5,
-                  max: 120,
-                  divisions: 23,
-                  label: '${duracionTemp ?? 30} min',
+                  value: (duracionTemp ?? 3).toDouble(),
+                  min: 1,
+                  max: 5,
+                  divisions: 4,
+                  label: '${duracionTemp ?? 3} min',
                   onChanged: (value) {
                     setStateDialog(() => duracionTemp = value.toInt());
                   },
                 ),
-                const Text('5 - 120 minutos'),
+                const Text('1 - 5 minutos'),
               ],
             );
           },
@@ -120,7 +117,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              setState(() => _duracionMinutos = duracionTemp ?? 30);
+              setState(() => _duracionMinutos = duracionTemp ?? 3);
               Navigator.of(context).pop();
             },
             style: ElevatedButton.styleFrom(
@@ -296,39 +293,44 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: programaciones.length,
                 itemBuilder: (context, index) {
-                    final entry = programaciones[index];
-                    final key = entry.key;
-                    final data = entry.value as Map<dynamic, dynamic>;
+                  final entry = programaciones[index];
+                  final key = entry.key;
+                  final data = entry.value as Map<dynamic, dynamic>;
 
-                    final fecha = DateTime.parse(data['fecha']);
-                    final hora = data['hora'];
-                    final duracion = data['duracionMinutos'];
-                    final activo = data['activo'] ?? true;
-                    final ejecutado = data['ejecutado'] ?? false;
+                  // Convertir timestamp (segundos UTC) a DateTime local
+                  final timestampSec = data['timestamp'] ?? 0;
+                  final fechaHora = DateTime.fromMillisecondsSinceEpoch(
+                    timestampSec * 1000,
+                    isUtc: true,
+                  ).toLocal();
+                  
+                  final duracion = data['duracionMinutos'] ?? 1;
+                  final activo = data['activo'] ?? true;
+                  final ejecutado = data['ejecutado'] ?? false;
 
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: ejecutado
-                              ? Colors.grey
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: ejecutado
+                            ? Colors.grey
+                            : activo
+                                ? Colors.blue.shade700
+                                : Colors.orange,
+                        child: Icon(
+                          ejecutado
+                              ? Icons.check
                               : activo
-                                  ? Colors.blue.shade700
-                                  : Colors.orange,
-                          child: Icon(
-                            ejecutado
-                                ? Icons.check
-                                : activo
-                                    ? Icons.schedule
-                                    : Icons.pause,
-                            color: Colors.white,
-                          ),
+                                  ? Icons.schedule
+                                  : Icons.pause,
+                          color: Colors.white,
                         ),
-                        title: Text(
-                          '${DateFormat('dd/MM/yyyy').format(fecha)} - $hora',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text('Duración: $duracion minutos'),
+                      ),
+                      title: Text(
+                        DateFormat('dd/MM/yyyy HH:mm').format(fechaHora),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text('Duración: $duracion minutos'),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
