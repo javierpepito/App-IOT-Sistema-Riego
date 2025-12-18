@@ -1,8 +1,11 @@
+// Importaciones necesarias para la pantalla de login
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 
+/// Pantalla de inicio de sesión
+/// Permite a los usuarios autenticarse con correo y contraseña
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -11,10 +14,17 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Llave para validar el formulario
   final _formKey = GlobalKey<FormState>();
+  
+  // Controladores para los campos de texto
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  
+  // Servicio de autenticación con Firebase
   final _authService = AuthService();
+  
+  // Estados de la UI
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -25,23 +35,29 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Maneja el proceso de inicio de sesión
+  /// Valida el formulario, autentica con Firebase y navega a la pantalla principal
   Future<void> _login() async {
+    // Valida que los campos estén correctos
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
+      // Intenta iniciar sesión con Firebase Authentication
       await _authService.signIn(
         _emailController.text.trim(),
         _passwordController.text,
       );
       
+      // Si el login es exitoso, navega a la pantalla principal
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       }
     } catch (e) {
+      // Muestra un mensaje de error si algo falla
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

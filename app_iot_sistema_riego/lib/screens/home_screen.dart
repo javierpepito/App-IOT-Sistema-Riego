@@ -1,3 +1,4 @@
+// Importaciones necesarias para la pantalla principal
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../services/auth_service.dart';
@@ -5,6 +6,8 @@ import '../services/database_service.dart';
 import 'login_screen.dart';
 import 'schedule_screen.dart';
 
+/// Pantalla principal de control del sistema de riego
+/// Permite activar/desactivar el riego manualmente y ver el estado en tiempo real
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -13,19 +16,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Servicios para autenticación y base de datos
   final _authService = AuthService();
   final _databaseService = DatabaseService();
+  
+  // Estado actual del sistema de riego
   String _estadoRiego = 'desactivado';
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    // Carga el estado inicial del riego desde Firebase
     _cargarEstadoInicial();
   }
 
+  /// Carga el estado inicial del riego desde Firebase
   Future<void> _cargarEstadoInicial() async {
     try {
+      // Obtiene el estado actual del riego desde la base de datos
       final estado = await _databaseService.obtenerEstadoActual();
       if (mounted) {
         setState(() => _estadoRiego = estado);
@@ -39,11 +48,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Cambia el estado del riego entre activo y desactivado
+  /// Actualiza el valor en Firebase y el ESP32 lo lee en tiempo real
   Future<void> _cambiarEstado() async {
     setState(() => _isLoading = true);
 
     try {
+      // Alterna entre activo y desactivado
       final nuevoEstado = _estadoRiego == 'activo' ? 'desactivado' : 'activo';
+      
+      // Actualiza el estado en Firebase Database
       await _databaseService.cambiarEstadoRiego(nuevoEstado);
       
       if (mounted) {
@@ -66,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Cierra la sesión del usuario y regresa a la pantalla de login
   Future<void> _cerrarSesion() async {
     await _authService.signOut();
     if (mounted) {
@@ -99,9 +114,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+      // StreamBuilder escucha cambios en tiempo real del estado del riego en Firebase
       body: StreamBuilder<DatabaseEvent>(
         stream: _databaseService.estadoRiegoStream,
         builder: (context, snapshot) {
+          // Actualiza el estado local cuando hay cambios en Firebase
           if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
             _estadoRiego = snapshot.data!.snapshot.value.toString();
           }

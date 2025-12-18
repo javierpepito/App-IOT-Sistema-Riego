@@ -1,15 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// Servicio de autenticación con Firebase
+/// Maneja login, registro, cierre de sesión y manejo de errores
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Stream de autenticación
+  /// Stream que notifica cambios en el estado de autenticación
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Usuario actual
+  /// Obtiene el usuario actualmente autenticado
   User? get currentUser => _auth.currentUser;
 
-  // Iniciar sesión
+  /// Inicia sesión con correo electrónico y contraseña
+  /// Retorna UserCredential si es exitoso
+  /// Lanza una excepción con mensaje en español si falla
   Future<UserCredential?> signIn(String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(
@@ -21,7 +25,9 @@ class AuthService {
     }
   }
 
-  // Registrarse
+  /// Registra un nuevo usuario con correo electrónico y contraseña
+  /// Retorna UserCredential si es exitoso
+  /// Lanza una excepción con mensaje en español si falla
   Future<UserCredential?> signUp(String email, String password) async {
     try {
       return await _auth.createUserWithEmailAndPassword(
@@ -33,12 +39,12 @@ class AuthService {
     }
   }
 
-  // Cerrar sesión
+  /// Cierra la sesión del usuario actual
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
-  // Manejo de errores
+  /// Convierte los códigos de error de Firebase a mensajes en español
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
